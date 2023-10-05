@@ -3,11 +3,13 @@ title: observability-ui-operator
 authors:
   - @jgbernalp
 reviewers: # Include a comment about what domain expertise a reviewer is expected to bring and what area of the enhancement you expect them to focus on. For example: - "@networkguru, for networking aspects, please look at IP bootstrapping aspect"
-  - TBD
+  - @kyoto
+  - @zhuje
+  - @alanconway
 approvers: # A single approver is preferred, the role of the approver is to raise important questions, help ensure the enhancement receives reviews from all applicable areas/SMEs, and determine when consensus is achieved such that the EP can move forward to implementation.  Having multiple approvers makes it difficult to determine who is responsible for the actual approval.
   - TBD
-api-approvers: # In case of new or modified APIs or API extensions (CRDs, aggregated apiservers, webhooks, finalizers). If there is no API change, use "None"
-  - "None"
+api-approvers:
+  - @spadgett
 creation-date: 2023-09-18
 last-updated: 2023-09-18
 tracking-link:
@@ -186,212 +188,61 @@ Review Processes:
 
 ### Drawbacks
 
-// TODO
-
-The idea is to find the best form of an argument why this enhancement should
-_not_ be implemented.
-
-What trade-offs (technical/efficiency cost, user experience, flexibility,
-supportability, etc) must be made in order to implement this? What are the reasons
-we might not want to undertake this proposal, and how do we overcome them?
-
-Does this proposal implement a behavior that's new/unique/novel? Is it poorly
-aligned with existing user expectations? Will it be a significant maintenance
-burden? Is it likely to be superceded by something else in the near future?
+- An additional operator to install and upgrade might be a burden for users. However, the Observability UI Operator will be available in the Red Hat catalog, and it will be possible to install it and upgrade it within the console.
+- There is an inheret dependece of the UI plugins with the signal operators. However, users will have the flexibility to choose which plugins they want to install and use.
 
 ## Design Details
 
-// TODO
+### Open Questions
 
-### Open Questions [optional]
-
-This is where to call out areas of the design that require closure before deciding
-to implement the design. For instance,
-
-> 1.  This requires exposing previously private resources which contain sensitive
->     information. Can we do this?
+- How does the operator enables the plugins from the Observability UI Operator without having to patch the console operator? Answer fom the console team: Plugins signed by Red Hat can be enabled by default.
 
 ### Test Plan
 
-// TODO
-
-**Note:** _Section not required until targeted at a release._
-
-Consider the following in developing a test plan for this enhancement:
-
-- Will there be e2e and integration tests, in addition to unit tests?
-- How will it be tested in isolation vs with other components?
-- What additional testing is necessary to support managed OpenShift service-based offerings?
-
-No need to outline all of the test cases, just the general strategy. Anything
-that would count as tricky in the implementation and anything particularly
-challenging to test should be called out.
-
-All code is expected to have adequate tests (eventually with coverage
-expectations).
+Alongside [Ginkgo](https://github.com/onsi/ginkgo) unit tests, we'll use [Cypress](https://github.com/cypress-io/cypress) for e2e tests on operator-created components, specifically the dynamic plugins toggles for a specific OpenShift console version from the [compatibility matrix](####operational-aspects-of-api-extensions). These e2e tests will run in a CI pipeline, and will verify plugin presence and correct toggles, while plugin functionality tests reside in their respective repositories.
 
 ### Graduation Criteria
 
-// TODO
+The initial release offers a Dev preview of the operator, featuring:
 
-**Note:** _Section not required until targeted at a release._
-
-Define graduation milestones.
-
-These may be defined in terms of API maturity, or as something else. Initial proposal
-should keep this high-level with a focus on what signals will be looked at to
-determine graduation.
-
-Consider the following in developing the graduation criteria for this
-enhancement:
-
-- Maturity levels
-  - [`alpha`, `beta`, `stable` in upstream Kubernetes][maturity-levels]
-  - `Dev Preview`, `Tech Preview`, `GA` in OpenShift
-- [Deprecation policy][deprecation-policy]
-
-Clearly define what graduation means by either linking to the [API doc definition](https://kubernetes.io/docs/concepts/overview/kubernetes-api/#api-versioning),
-or by redefining what graduation means.
-
-In general, we try to use the same stages (alpha, beta, GA), regardless how the functionality is accessed.
-
-[maturity-levels]: https://git.k8s.io/community/contributors/devel/sig-architecture/api_changes.md#alpha-beta-and-stable-versions
-[deprecation-policy]: https://kubernetes.io/docs/reference/using-api/deprecation-policy/
-
-**If this is a user facing change requiring new or updated documentation in [openshift-docs](https://github.com/openshift/openshift-docs/),
-please be sure to include in the graduation criteria.**
-
-**Examples**: These are generalized examples to consider, in addition
-to the aforementioned [maturity levels][maturity-levels].
+- Dashboards console plugin
+- Plugin compatibility tests
+- Operator deployment script
+- Basic installation and CRD plugin-enabling documentation
 
 #### Dev Preview -> Tech Preview
 
-// TODO
-
-- Ability to utilize the enhancement end to end
-- End user documentation, relative API stability
+- End user documentation
+- Gather feedback from users
+- Allow installation from the console catalog
 - Sufficient test coverage
-- Gather feedback from users rather than just developers
-- Enumerate service level indicators (SLIs), expose SLIs as metrics
-- Write symptoms-based alerts for the component(s)
+- Logging view plugin
 
 #### Tech Preview -> GA
 
-// TODO
-
 - More testing (upgrade, downgrade, scale)
 - Sufficient time for feedback
-- Available by default
-- Backhaul SLI telemetry
-- Document SLOs for the component
-- Conduct load testing
 - User facing documentation created in [openshift-docs](https://github.com/openshift/openshift-docs/)
-
-**For non-optional features moving to GA, the graduation criteria must include
-end to end tests.**
 
 #### Removing a deprecated feature
 
-// TODO
-
-- Announce deprecation and support policy of the existing feature
-- Deprecate the feature
+N/A
 
 ### Upgrade / Downgrade Strategy
 
-// TODO
+As plugins are managed by the console operator, during upgrade or downgrade operations, plugins might be unavailable for a window when the console version and operator are at different versions.
 
-If applicable, how will the component be upgraded and downgraded? Make sure this
-is in the test plan.
-
-Consider the following in developing an upgrade/downgrade strategy for this
-enhancement:
-
-- What changes (in invocations, configurations, API use, etc.) is an existing
-  cluster required to make on upgrade in order to keep previous behavior?
-- What changes (in invocations, configurations, API use, etc.) is an existing
-  cluster required to make on upgrade in order to make use of the enhancement?
-
-Upgrade expectations:
-
-- Each component should remain available for user requests and
-  workloads during upgrades. Ensure the components leverage best practices in handling [voluntary
-  disruption](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/). Any exception to
-  this should be identified and discussed here.
-- Micro version upgrades - users should be able to skip forward versions within a
-  minor release stream without being required to pass through intermediate
-  versions - i.e. `x.y.N->x.y.N+2` should work without requiring `x.y.N->x.y.N+1`
-  as an intermediate step.
-- Minor version upgrades - you only need to support `x.N->x.N+1` upgrade
-  steps. So, for example, it is acceptable to require a user running 4.3 to
-  upgrade to 4.5 with a `4.3->4.4` step followed by a `4.4->4.5` step.
-- While an upgrade is in progress, new component versions should
-  continue to operate correctly in concert with older component
-  versions (aka "version skew"). For example, if a node is down, and
-  an operator is rolling out a daemonset, the old and new daemonset
-  pods must continue to work correctly even while the cluster remains
-  in this partially upgraded state for some time.
-
-Downgrade expectations:
-
-- If an `N->N+1` upgrade fails mid-way through, or if the `N+1` cluster is
-  misbehaving, it should be possible for the user to rollback to `N`. It is
-  acceptable to require some documented manual steps in order to fully restore
-  the downgraded cluster to its previous state. Examples of acceptable steps
-  include:
-  - Deleting any CVO-managed resources added by the new version. The
-    CVO does not currently delete resources that no longer exist in
-    the target version.
+The Observability UI Operator will re deploy the plugins when the console operator is updated as different versions of the console might enable different plugin features.
 
 ### Version Skew Strategy
 
-// TODO
+To solve the version skew the Observability UI Operator will manage the plugn feature toggles based on the OCP version and the signal operator version. The compatibility between signal operators and the plugin is responsibility of the plugin.
 
-How will the component handle version skew with other components?
-What are the guarantees? Make sure this is in the test plan.
-
-Consider the following in developing a version skew strategy for this
-enhancement:
-
-- During an upgrade, we will always have skew among components, how will this impact your work?
-- Does this enhancement involve coordinating behavior in the control plane and
-  in the kubelet? How does an n-2 kubelet without this feature available behave
-  when this feature is used?
-- Will any other components on the node change? For example, changes to CSI, CRI
-  or CNI may require updating that component before the kubelet.
+In the case feature toggles are not enough because a different version of the plugin image is required, The Observability UI Operator can contribute multiple plugins with different version ranges to support different OpenShift versions. If the version ranges don't overlap, the console will only load the correct plugin.
 
 ### Operational Aspects of API Extensions
 
-// TODO
-
-Describe the impact of API extensions (mentioned in the proposal section, i.e. CRDs,
-admission and conversion webhooks, aggregated API servers, finalizers) here in detail,
-especially how they impact the OCP system architecture and operational aspects.
-
-- For conversion/admission webhooks and aggregated apiservers: what are the SLIs (Service Level
-  Indicators) an administrator or support can use to determine the health of the API extensions
-
-  Examples (metrics, alerts, operator conditions)
-
-  - authentication-operator condition `APIServerDegraded=False`
-  - authentication-operator condition `APIServerAvailable=True`
-  - openshift-authentication/oauth-apiserver deployment and pods health
-
-- What impact do these API extensions have on existing SLIs (e.g. scalability, API throughput,
-  API availability)
-
-  Examples:
-
-  - Adds 1s to every pod update in the system, slowing down pod scheduling by 5s on average.
-  - Fails creation of ConfigMap in the system when the webhook is not available.
-  - Adds a dependency on the SDN service network for all resources, risking API availability in case
-    of SDN issues.
-  - Expected use-cases require less than 1000 instances of the CRD, not impacting
-    general API throughput.
-
-- How is the impact on existing SLIs to be measured and when (e.g. every release by QE, or
-  automatically in CI) and by whom (e.g. perf team; name the responsible person and let them review
-  this enhancement)
+- Each plugin managed by the operator is expected to create only one instance of a CRD. Therefore, it's anticipated that there will be no significant impact on the overall API throughput.
 
 #### Failure Modes
 
@@ -461,15 +312,9 @@ Describe how to
 
 ## Implementation History
 
-// TODO
-
-Major milestones in the life cycle of a proposal should be tracked in `Implementation
-History`.
+N/A
 
 ## Alternatives
 
-// TODO
-
-Similar to the `Drawbacks` section the `Alternatives` section is used to
-highlight and record other possible approaches to delivering the value proposed
-by an enhancement.
+- Deliver the plugins as part of the signal operators. This is the current behavior for some operators such as the logging operator, in which an unrelated plugin is deployed. This approach would require the signal operators to maintain the plugins and would increase the complexity of the signal operators.
+- Include the plugins as part of the console operator. The console team created the dynamic plugins to give other teams the flexibility to extend the console without having to patch the console operator. This approach would require the console team to maintain the plugins and would increase the complexity of the console operator.

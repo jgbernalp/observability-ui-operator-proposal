@@ -13,7 +13,7 @@ api-approvers:
 creation-date: 2023-09-18
 last-updated: 2023-09-18
 tracking-link:
-  - "[OU-204](https://issues.redhat.com/browse/OU-204)"
+  - https://issues.redhat.com/browse/OU-204
 see-also:
   - ""
 replaces:

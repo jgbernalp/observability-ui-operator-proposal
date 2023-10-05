@@ -246,14 +246,8 @@ In the case feature toggles are not enough because a different version of the pl
 
 #### Failure Modes
 
-// TODO
-
-- Describe the possible failure modes of the API extensions.
-- Describe how a failure or behaviour of the extension will impact the overall cluster health
-  (e.g. which kube-controller-manager functionality will stop working), especially regarding
-  stability, availability, performance and security.
-- Describe which OCP teams are likely to be called upon in case of escalation with one of the failure modes
-  and add them as reviewers to this enhancement.
+- When the plugin deployment does not serve the plugin files the console will show a default error message but the console and cluster will continue to work as expected.
+- If the plugin deployment fails, the operator will retry the deployment until it succeeds or the operator or the CR are deleted.
 
 #### Support Procedures
 

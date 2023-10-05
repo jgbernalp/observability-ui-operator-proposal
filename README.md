@@ -1,15 +1,15 @@
 ---
 title: observability-ui-operator
 authors:
-  - @jgbernalp
+  - "@jgbernalp"
 reviewers: # Include a comment about what domain expertise a reviewer is expected to bring and what area of the enhancement you expect them to focus on. For example: - "@networkguru, for networking aspects, please look at IP bootstrapping aspect"
-  - @kyoto
-  - @zhuje
-  - @alanconway
+  - "@kyoto"
+  - "@zhuje"
+  - "@alanconway"
 approvers: # A single approver is preferred, the role of the approver is to raise important questions, help ensure the enhancement receives reviews from all applicable areas/SMEs, and determine when consensus is achieved such that the EP can move forward to implementation.  Having multiple approvers makes it difficult to determine who is responsible for the actual approval.
   - TBD
 api-approvers:
-  - @spadgett
+  - "@spadgett"
 creation-date: 2023-09-18
 last-updated: 2023-09-18
 tracking-link:
